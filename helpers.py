@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score, mean_squared_error
 import seaborn as sns
@@ -16,23 +16,31 @@ def clean_data(df):
     X - A matrix holding all of the variables you want to consider when predicting the response
     y - the corresponding response vector
     '''
-    X = df.drop(['game_id', 'score'], axis=1)
+    X = df.drop(['game_id', 'score', 'title'], axis=1)
     y = df['score']
     
-    num_vars = X.select_dtypes(include=['float', 'int'])
     
     cat_vars = X.select_dtypes(include=['object'])
-    cat_vars_cols = cat_vars.columns
+    cat_vars_cols = set(cat_vars.columns)
     
-    cat_vars = pd.concat([cat_vars, pd.get_dummies(cat_vars, prefix=cat_vars_cols, prefix_sep='_', drop_first=True)], axis=1)
-    cat_vars.drop(cat_vars_cols, axis=1, inplace=True)
-    
-    X = pd.concat([num_vars, cat_vars], axis=1)
+#   num_vars = X.select_dtypes(include=['float', 'int', 'int64'])
+#   cat_vars = pd.concat([cat_vars, pd.get_dummies(cat_vars, prefix=cat_vars_cols, prefix_sep='_', drop_first=True)], axis=1)
+#   cat_vars.drop(cat_vars_cols, axis=1, inplace=True)
+#   X = pd.concat([num_vars, cat_vars], axis=1)
+
+    for col in cat_vars_cols:
+        # for each cat add dummy var, drop original column
+        if col == 'editors_choice':
+            X = pd.concat([X.drop(col, axis=1), pd.get_dummies(df[col], prefix=col, prefix_sep='_', drop_first=True)], axis=1)
+        else:
+            X = pd.concat([X.drop(col, axis=1), pd.get_dummies(df[col], prefix=col, prefix_sep='_', drop_first=False)], axis=1)
+            
+
     
     
     return X, y
 
-def build_linear_mod(X, y, test_size=.3, rand_state=7):
+def build_linear_mod(X, y, test_size=.3, rand_state=42):
     '''
     INPUT:
     df - a dataframe holding all the variables of interest
@@ -49,10 +57,10 @@ def build_linear_mod(X, y, test_size=.3, rand_state=7):
     X_train, X_test, y_train, y_test - output from sklearn train test split used for optimal model
     '''
     # Splitting data set
-    X_train, X_test, y_train, y_test = train_test_split(X, y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     
     # Model 
-    lm_model = LinearRegression(normalize=True)
+    lm_model = Ridge(normalize=True, random_state=rand_state)
     lm_model.fit(X_train, y_train)
     
     # Predictions
@@ -66,10 +74,10 @@ def build_linear_mod(X, y, test_size=.3, rand_state=7):
     return test_score, train_score, lm_model, X_train, X_test, y_train, y_test
 
 
-def coef_weights(coefficients, X_train):
+def coef_weights(lm_model, X_train):
     '''
     INPUT:
-    coefficients - the coefficients of the linear model 
+    lm_model - the linear model 
     X_train - the training data, so the column names can be used
     OUTPUT:
     coefs_df - a dataframe holding the coefficient, estimate, and abs(estimate)
@@ -79,9 +87,9 @@ def coef_weights(coefficients, X_train):
     variable attached to the coefficient.
     '''
     coefs_df = pd.DataFrame()
-    coefs_df['est_int'] = X_train.columns
-    coefs_df['coefs'] = lm_model.coef_
-    coefs_df['abs_coefs'] = np.abs(lm_model.coef_)
-    coefs_df = coefs_df.sort_values('abs_coefs', ascending=False)
+    coefs_df['Feature'] = X_train.columns
+    coefs_df['Coefficient'] = lm_model.coef_
+    coefs_df['Abs_Coefficient'] = np.abs(lm_model.coef_)
+    coefs_df = coefs_df.sort_values('Abs_Coefficient', ascending=False)
     return coefs_df
     
