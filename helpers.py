@@ -40,7 +40,7 @@ def clean_data(df):
     
     return X, y
 
-def build_linear_mod(X, y, test_size=.3, rand_state=42):
+def build_linear_mod(X, y, test_size=.3, rand_state=10):
     '''
     INPUT:
     df - a dataframe holding all the variables of interest
@@ -56,6 +56,8 @@ def build_linear_mod(X, y, test_size=.3, rand_state=42):
     lm_model - model object from sklearn
     X_train, X_test, y_train, y_test - output from sklearn train test split used for optimal model
     '''
+    np.random.seed(10)
+    
     # Splitting data set
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
     
