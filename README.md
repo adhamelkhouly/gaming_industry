@@ -35,8 +35,9 @@ This is my first Data Science project, and also happens to be the first project 
 
 ## File Descriptions <a name="files"></a>
 
-- ign.csv : contains game release dates, genres, platforms, and scores.
+- ign.csv : Contains game release dates, genres, platforms, and scores.
 - Are_Some_Games_Set_To_Succeed.ipynb : This notebook contains all the data analysis and modelling.
+- helpers.py : Contains some helper functions used in data wrangling and modelling.
 
 
 ## Results<a name="results"></a>
