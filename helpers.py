@@ -22,11 +22,6 @@ def clean_data(df):
     
     cat_vars = X.select_dtypes(include=['object'])
     cat_vars_cols = set(cat_vars.columns)
-    
-#   num_vars = X.select_dtypes(include=['float', 'int', 'int64'])
-#   cat_vars = pd.concat([cat_vars, pd.get_dummies(cat_vars, prefix=cat_vars_cols, prefix_sep='_', drop_first=True)], axis=1)
-#   cat_vars.drop(cat_vars_cols, axis=1, inplace=True)
-#   X = pd.concat([num_vars, cat_vars], axis=1)
 
     for col in cat_vars_cols:
         # for each cat add dummy var, drop original column
